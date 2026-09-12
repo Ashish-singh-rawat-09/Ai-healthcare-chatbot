@@ -58,9 +58,20 @@ def get_rag_chain():
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         print("Retriever ready")
 
-        # ---------------- LLM (ACTIVE GROQ MODEL) ----------------
+       # ---------------- LLM (AUTO-DETECT ACTIVE MODEL) ----------------
+        from groq import Groq
+        groq_client = Groq(api_key=GROQ_API_KEY)
+        
+        # Groq se live available models ki list fetch karna
+        available_models = [m.id for m in groq_client.models.list().data if not m.id.startswith("whisper")]
+        print("Available Groq models:", available_models)
+
+        # Active chat model select karna (Llama preference)
+        selected_model = next((m for m in available_models if "llama" in m.lower() and "preview" not in m), available_models[0])
+        print(f"Using active model: {selected_model}")
+
         llm = ChatGroq(
-            model_name="gemma2-9b-it",
+            model=selected_model,
             temperature=0,
             groq_api_key=GROQ_API_KEY
         )
