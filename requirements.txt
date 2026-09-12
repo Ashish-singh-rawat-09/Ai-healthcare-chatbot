@@ -3,9 +3,9 @@ pypdf
 python-dotenv
 langchain-pinecone
 langchain-groq
-langchain-huggingface
 langchain==0.2.16
 langchain-community==0.2.16
 langchain-core==0.2.39
 langchain-text-splitters
+fastembed
 gunicorn
