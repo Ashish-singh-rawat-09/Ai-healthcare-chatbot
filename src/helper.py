@@ -34,12 +34,19 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# ---------------- DIRECT HF EMBEDDINGS (NO LIBRARY CONFLICT) ----------------
+# ---------------- DIRECT HF EMBEDDINGS ----------------
 class CloudHuggingFaceEmbeddings(Embeddings):
     def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
         self.api_url = f"https://router.huggingface.co/hf-inference/models/{model_name}"
         self.token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
         self.headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+
+    def _extract_vector(self, data):
+        while isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+            data = data[0]
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], (int, float)):
+            return [float(x) for x in data]
+        raise ValueError(f"Invalid embedding received: {data}")
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         response = requests.post(
@@ -47,7 +54,10 @@ class CloudHuggingFaceEmbeddings(Embeddings):
             headers=self.headers,
             json={"inputs": texts, "options": {"wait_for_model": True}}
         )
-        return response.json()
+        res = response.json()
+        if isinstance(res, list):
+            return [self._extract_vector(item) for item in res]
+        raise ValueError(f"HF API error in embed_documents: {res}")
 
     def embed_query(self, text: str) -> List[float]:
         response = requests.post(
@@ -56,9 +66,7 @@ class CloudHuggingFaceEmbeddings(Embeddings):
             json={"inputs": text, "options": {"wait_for_model": True}}
         )
         res = response.json()
-        if isinstance(res, list) and len(res) > 0 and isinstance(res[0], list):
-            return res[0]
-        return res
+        return self._extract_vector(res)
 
 
 def download_hugging_face_embeddings():
