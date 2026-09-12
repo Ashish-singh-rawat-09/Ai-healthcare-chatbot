@@ -1,9 +1,7 @@
-from ast import Is
-
-from flask import Flask, render_template, request
-from dotenv import load_dotenv
 import os
 import traceback
+from flask import Flask, render_template, request
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 load_dotenv()
@@ -12,13 +10,6 @@ load_dotenv()
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "medical-chatbot")
-# APIs Used:
-# Pinecone API
-# Vector database ke liye
-# Medical documents store hote hain
-# Groq API
-# LLM model run karne ke liye
-# Fast AI responses generate karta hai
 
 if not PINECONE_API_KEY or not GROQ_API_KEY:
     raise ValueError("API keys missing. Check .env file")
@@ -32,7 +23,6 @@ rag_chain = None
 
 
 # ---------------- RAG SETUP ----------------
-# RAG chain ko globally store kiya gaya hai taaki baar-baar initialize na karna pade.
 def get_rag_chain():
     global rag_chain
 
@@ -53,12 +43,6 @@ def get_rag_chain():
         from langchain_core.prompts import ChatPromptTemplate
 
         print("Imports successful")
-# Is function ka kaam:
-# Embeddings load karna
-# Pinecone connect karna
-# Retriever banana
-# LLM initialize karna
-# RAG pipeline banana
 
         # ---------------- EMBEDDINGS ----------------
         embeddings = download_hugging_face_embeddings()
@@ -74,9 +58,9 @@ def get_rag_chain():
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         print("Retriever ready")
 
-        # ---------------- LLM ----------------
+        # ---------------- LLM (UPDATED TO ACTIVE GROQ MODEL) ----------------
         llm = ChatGroq(
-            model_name="llama-3.1-8b-instant",
+            model="llama-3.3-70b-versatile",
             temperature=0,
             groq_api_key=GROQ_API_KEY
         )
