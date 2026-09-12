@@ -1,13 +1,14 @@
 # ---------------- FIX FOR WINDOWS (pwd issue) ----------------
 import sys
 import types
+import os
 sys.modules['pwd'] = types.ModuleType('pwd')
 
 # ---------------- IMPORTS ----------------
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 
 # ---------------- LOAD DATA ----------------
@@ -31,9 +32,11 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# ---------------- EMBEDDINGS ----------------
+# ---------------- EMBEDDINGS (CLOUD API) ----------------
 def download_hugging_face_embeddings():
-    embeddings = HuggingFaceEmbeddings(
+    hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+    embeddings = HuggingFaceInferenceAPIEmbeddings(
+        api_key=hf_token,
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
     return embeddings
