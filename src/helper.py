@@ -8,7 +8,7 @@ sys.modules['pwd'] = types.ModuleType('pwd')
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 
 # ---------------- LOAD DATA ----------------
@@ -32,11 +32,11 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# ---------------- EMBEDDINGS (CLOUD API) ----------------
+# ---------------- EMBEDDINGS ----------------
 def download_hugging_face_embeddings():
     hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    embeddings = HuggingFaceInferenceAPIEmbeddings(
-        api_key=hf_token,
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+    embeddings = HuggingFaceEndpointEmbeddings(
+        model="sentence-transformers/all-MiniLM-L6-v2",
+        huggingfacehub_api_token=hf_token
     )
     return embeddings
