@@ -58,14 +58,14 @@ def get_rag_chain():
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         print("Retriever ready")
 
-        # ---------------- LLM (VERIFIED FROM YOUR LOGS) ----------------
+        # ---------------- LLM (WITH TOKEN LIMIT FIX) ----------------
         llm = ChatGroq(
             model="qwen/qwen3.8-27b",
             temperature=0,
+            max_tokens=500,
             groq_api_key=GROQ_API_KEY
         )
         print("LLM ready")
-
         # ---------------- PROMPT ----------------
         prompt = ChatPromptTemplate.from_messages(
             [
