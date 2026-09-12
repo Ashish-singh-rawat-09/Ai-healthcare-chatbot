@@ -58,9 +58,9 @@ def get_rag_chain():
         retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
         print("Retriever ready")
 
-        # ---------------- LLM (UPDATED TO ACTIVE GROQ MODEL) ----------------
+        # ---------------- LLM (FIXED PERMANENT GROQ MODEL) ----------------
         llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
+            model="llama3-8b-8192",
             temperature=0,
             groq_api_key=GROQ_API_KEY
         )
