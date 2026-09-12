@@ -7,7 +7,7 @@ sys.modules['pwd'] = types.ModuleType('pwd')
 # ---------------- IMPORTS ----------------
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.directory import DirectoryLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 
 
