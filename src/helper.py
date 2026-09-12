@@ -1,14 +1,16 @@
-# ---------------- FIX FOR WINDOWS (pwd issue) ----------------
+# ---------------- FIX FOR WINDOWS ----------------
 import sys
 import types
 import os
+import requests
+from typing import List
+from langchain_core.embeddings import Embeddings
 sys.modules['pwd'] = types.ModuleType('pwd')
 
 # ---------------- IMPORTS ----------------
 from langchain_community.document_loaders.pdf import PyPDFLoader
 from langchain_community.document_loaders.directory import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 
 # ---------------- LOAD DATA ----------------
@@ -32,11 +34,32 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# ---------------- EMBEDDINGS ----------------
+# ---------------- DIRECT HF EMBEDDINGS (NO LIBRARY CONFLICT) ----------------
+class CloudHuggingFaceEmbeddings(Embeddings):
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+        self.api_url = f"https://router.huggingface.co/hf-inference/models/{model_name}"
+        self.token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
+        self.headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        response = requests.post(
+            self.api_url,
+            headers=self.headers,
+            json={"inputs": texts, "options": {"wait_for_model": True}}
+        )
+        return response.json()
+
+    def embed_query(self, text: str) -> List[float]:
+        response = requests.post(
+            self.api_url,
+            headers=self.headers,
+            json={"inputs": text, "options": {"wait_for_model": True}}
+        )
+        res = response.json()
+        if isinstance(res, list) and len(res) > 0 and isinstance(res[0], list):
+            return res[0]
+        return res
+
+
 def download_hugging_face_embeddings():
-    hf_token = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    embeddings = HuggingFaceEndpointEmbeddings(
-        model="sentence-transformers/all-MiniLM-L6-v2",
-        huggingfacehub_api_token=hf_token
-    )
-    return embeddings
+    return CloudHuggingFaceEmbeddings()
